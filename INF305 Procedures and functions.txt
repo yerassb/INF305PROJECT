@@ -1,0 +1,68 @@
+CREATE OR REPLACE PROCEDURE warehouse_capacity
+AS
+CURSOR cursorr IS SELECT warehouse_id, sum(quantity) total_quant FROM inventory group by warehouse_id order by warehouse_id;
+BEGIN 
+    for roww in cursorr LOOP
+        dbms_output.put_line('Warehouse no' || roww.warehouse_id || ': ' || roww.total_quant);
+    end loop;
+END;
+/
+
+CREATE OR REPLACE FUNCTION cnt_rec(table_name varchar)
+RETURN NUMBER
+IS
+    cnt number;
+begin
+    execute immediate 'SELECT COUNT(*)
+    FROM ' || table_name INTO cnt;
+
+    return cnt;
+end;
+/
+
+CREATE OR REPLACE PROCEDURE upd_costbycat(
+    CAT in varchar,
+    diff in number
+)
+is
+BEGIN
+    UPDATE ITEMS
+    SET PRICE = PRICE + DIFF
+    WHERE CATEGORYY LIKE CAT;
+
+    DBMS_OUTPUT.PUT_LINE('Number of rows affected: ' || SQL%ROWCOUNT);
+END;
+/
+
+CREATE OR REPLACE PROCEDURE CHNAMEBYID(
+    NEWNAME VARCHAR,
+    IID NUMBER
+)
+AS
+    too_short exception;
+BEGIN
+    IF LENGTH(NEWNAME) < 5 THEN RAISE TOO_SHORT;
+    ELSE
+        UPDATE ITEMS
+        SET NAMEE = NEWNAME
+        WHERE ITEM_ID = IID;
+    END IF;
+
+    COMMIT;
+    
+    dbms_output.put_line('Item name changed to ' || NEWNAME );
+EXCEPTION
+    WHEN TOO_SHORT THEN
+        DBMS_OUTPUT.PUT_LINE('New name is just too short');
+END;
+/
+
+CREATE OR REPLACE TRIGGER rowcnt
+BEFORE INSERT ON REVIEWS
+DECLARE
+    ROW_NUM NUMBER;
+BEGIN
+    SELECT COUNT(*) INTO ROW_NUM FROM REVIEWS;
+    DBMS_OUTPUT.PUT_LINE('Number of rows before insert ' || row_num);
+END;
+/
